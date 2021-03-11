@@ -17,33 +17,70 @@ if (Meteor.isClient) {
     return (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
   }
 
-  send_data_to_marketo = function() {
-    api_key = "5ad372bc443f9d29ae28b119d792b5cdf1686201";
+  const getResource = async() => {
+    try {
+      var res;
+      await $.ajax({
+        url: 'https://kalyber-proxy.herokuapp.com/https://141-HJW-872.mktorest.com/identity/oauth/token?grant_type=client_credentials&client_id=322a9958-4e90-4641-9a93-77a23a133eaa&client_secret=S7mF7SDyfbiEiaxNXnmV8KXkuokTZ3gW',
+        type: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': '*/*',
+          'Access-Control-Allow-Origin' : 'http://localhost:3000',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        success: function (data) {
+            res = data.access_token
+            console.log(res)
+        },
+        error: function (err) {
+            console.log(err);
+        }
+      });
+      return res;
+    } catch (err) {
+        console.log(err);
+    }
+  }
 
-    $.ajax({
-      url: "https://kalyber-proxy.herokuapp.com/141-HJW-872.mktorest.com/rest/v1/leads.json",
-      type: "POST",
-      headers: {
-        'Authorization': 'Bearer c2fec1cfd-993e-483b-b5f5-7d26ee2f4292:sj',
-        "X-Requested-With": "XMLHttpRequest"
-      },
-      dataType: "json",
-      data: { api_key: api_key, options: marketo_options_hash() },
-      error: function (request, status, error) {
-        $(".lead-submit button").removeClass("hidden");
+
+  const send_data_to_marketo = async() => {
+
+    try {
+      const auth = await getResource()
+      $.ajax({
+        url: 'https://kalyber-proxy.herokuapp.com/https://141-HJW-872.mktorest.com/rest/v1/leads.json',
+        type: 'POST',
+        crossDomain: true,
+        dataType: 'json',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + auth,
+          'Access-Control-Allow-Origin' : 'http://localhost:3000',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': '*/*'
+        },
+        data: marketo_options_hash(),
+        error: function (request, status, error) {
+          $(".lead-submit button").removeClass("hidden");
+          $(".calculating-result").addClass("hidden");
+          $(".internet-connection-error").removeClass("hidden");
+        },
+        timeout: 20000,
+      }).done(function(data) {
+        $(".lead-form").addClass("hidden");
+        $(".lead-form-info").addClass("hidden");
         $(".calculating-result").addClass("hidden");
-        $(".internet-connection-error").removeClass("hidden");
-      },
-      timeout: 20000,
-    }).done(function(data) {
-      $(".lead-form").addClass("hidden");
-      $(".lead-form-info").addClass("hidden");
-      $(".calculating-result").addClass("hidden");
-      $(".result-pages").removeClass("hidden");
-      update_iframe_height();
-      scroll_to_top();
-      console.log(data["success"]);
-    })
+        $(".result-pages").removeClass("hidden");
+        update_iframe_height();
+        scroll_to_top();
+        console.log(data["success"]);
+      })
+    } catch (error) {
+      console.log(error);
+    }
+
   }
 
   update_iframe_height = function() {
@@ -244,22 +281,23 @@ if (Meteor.isClient) {
   }
 
   testData = function() {
-    return(
-      { 
-        "lookupField":"email",
-        "input":[ 
-              { 
-                  "email":"Ricco@kalyber.com",
-                  "firstName":"Boss Moss",
-                  "postalCode":"number",
-                  "OCEM_Assessment_Comments__c": "100",
-                  "OCEM_Assessment_Version__c": "200"
-              }
-          ]
-      }
-    )
+    var data = JSON.stringify({ 
+      "lookupField":"email",
+      "input":[ 
+            { 
+                "email":"JimmyJohns@kalyber.com",
+                "firstName":"Pizza",
+                "postalCode":"8675309",
+                "OCEM_Assessment_Comments__c": "100",
+                "OCEM_Assessment_Version__c": "200"
+            }
+        ]
+    });
+
+    return data
      
   }
+
 
   marketo_options_hash = function(){
     var question_1_answer = $("#question_1").find("input[type='radio']:checked").val();
@@ -279,142 +317,83 @@ if (Meteor.isClient) {
     var question_15_answer = $("#question_15").find("input[type='radio']:checked").val();
     var question_16_answer = $("#question_16").find("input[type='radio']:checked").val();
 
-    return {
+    var data = JSON.stringify({ 
       "lookupField":"email",
       "input":[ 
             { 
                 "email": $("#email").val(),
-                'requestTimestamp': new Date().toJSON(),
+                // 'requestTimestamp': new Date().toJSON(),
                 "firstName": $("#first_name").val(),
                 'LastName': $("#last_name").val(),
                 'Company': $("#company").val(),
                 'Title': $("#job_title").val(),
                 'Country': $("#country").val(),
-                'NumberOfEmployees': $("#company_size").val(),
-                'Industry': $("#industry").val(),
+                // 'NumberOfEmployees': $("#company_size").val(),
+                // 'Industry': $("#industry").val(),
 
-                'OCEM_Overall_Score': see_theme_score + wire_theme_score + drive_theme_score + innovate_theme_score,
-                'OCEM_See_Score': see_theme_score,
-                'OCEM_Wire_Score': wire_theme_score,
-                'OCEM_Accountability_Score': drive_theme_score,
-                'OCEM_Innovate_Score': innovate_theme_score,
+                // 'OCEM_Overall_Score': see_theme_score + wire_theme_score + drive_theme_score + innovate_theme_score,
+                // 'OCEM_See_Score': see_theme_score,
+                // 'OCEM_Wire_Score': wire_theme_score,
+                // 'OCEM_Accountability_Score': drive_theme_score,
+                // 'OCEM_Innovate_Score': innovate_theme_score,
 
-                'OCEM_Quantified_Score': answer_points_mapping(question_1_answer),
-                'OCEM_ExecutiveLed_Score': answer_points_mapping(question_2_answer),
-                'OCEM_Prioritized_Score': answer_points_mapping(question_3_answer),
-                'OCEM_Leveraged_Score': answer_points_mapping(question_4_answer),
-                'OCEM_Aligned_Score': answer_points_mapping(question_5_answer),
-                'OCEM_Embedded_Score': answer_points_mapping(question_6_answer),
-                'OCEM_Pervasive_Score': answer_points_mapping(question_7_answer),
-                'OCEM_Relevant_Score': answer_points_mapping(question_8_answer),
-                'OCEM_Responsive_Score': answer_points_mapping(question_9_answer),
-                'OCEM_SolutionOriented_Score': answer_points_mapping(question_10_answer),
-                'OCEM_Proactive_Score': answer_points_mapping(question_11_answer),
-                'OCEM_Comprehensive_Score': answer_points_mapping(question_12_answer),
-                'OCEM_RealTime_Score': answer_points_mapping(question_13_answer),
-                'OCEM_Integrated_Score': answer_points_mapping(question_14_answer),
-                'OCEM_Representative_Score': answer_points_mapping(question_15_answer),
-                'OCEM_CustomerFriendly_Score': answer_points_mapping(question_16_answer),
+                // 'OCEM_Quantified_Score': answer_points_mapping(question_1_answer),
+                // 'OCEM_ExecutiveLed_Score': answer_points_mapping(question_2_answer),
+                // 'OCEM_Prioritized_Score': answer_points_mapping(question_3_answer),
+                // 'OCEM_Leveraged_Score': answer_points_mapping(question_4_answer),
+                // 'OCEM_Aligned_Score': answer_points_mapping(question_5_answer),
+                // 'OCEM_Embedded_Score': answer_points_mapping(question_6_answer),
+                // 'OCEM_Pervasive_Score': answer_points_mapping(question_7_answer),
+                // 'OCEM_Relevant_Score': answer_points_mapping(question_8_answer),
+                // 'OCEM_Responsive_Score': answer_points_mapping(question_9_answer),
+                // 'OCEM_SolutionOriented_Score': answer_points_mapping(question_10_answer),
+                // 'OCEM_Proactive_Score': answer_points_mapping(question_11_answer),
+                // 'OCEM_Comprehensive_Score': answer_points_mapping(question_12_answer),
+                // 'OCEM_RealTime_Score': answer_points_mapping(question_13_answer),
+                // 'OCEM_Integrated_Score': answer_points_mapping(question_14_answer),
+                // 'OCEM_Representative_Score': answer_points_mapping(question_15_answer),
+                // 'OCEM_CustomerFriendly_Score': answer_points_mapping(question_16_answer),
 
-                'OCEM_Quantified_Rating': answer_result_mapping(question_1_answer),
-                'ExecutiveLed_Rating': answer_result_mapping(question_2_answer),
-                'Prioritized_Rating': answer_result_mapping(question_3_answer),
-                'Leveraged_Rating': answer_result_mapping(question_4_answer),
-                'Aligned_Rating': answer_result_mapping(question_5_answer),
-                'Embedded_Rating': answer_result_mapping(question_6_answer),
-                'Pervasive_Rating': answer_result_mapping(question_7_answer),
-                'Relevant_Rating': answer_result_mapping(question_8_answer),
-                'Responsive_Rating': answer_result_mapping(question_9_answer),
-                'SolutionOriented_Rating': answer_result_mapping(question_10_answer),
-                'Proactive_Rating': answer_result_mapping(question_11_answer),
-                'Comprehensive_Rating': answer_result_mapping(question_12_answer),
-                'RealTime_Rating': answer_result_mapping(question_13_answer),
-                'Integrated_Rating': answer_result_mapping(question_14_answer),
-                'Representative_Rating': answer_result_mapping(question_15_answer),
-                'CustomerFriendly_Rating': answer_result_mapping(question_16_answer),
+                // 'OCEM_Quantified_Rating': answer_result_mapping(question_1_answer),
+                // 'ExecutiveLed_Rating': answer_result_mapping(question_2_answer),
+                // 'Prioritized_Rating': answer_result_mapping(question_3_answer),
+                // 'Leveraged_Rating': answer_result_mapping(question_4_answer),
+                // 'Aligned_Rating': answer_result_mapping(question_5_answer),
+                // 'Embedded_Rating': answer_result_mapping(question_6_answer),
+                // 'Pervasive_Rating': answer_result_mapping(question_7_answer),
+                // 'Relevant_Rating': answer_result_mapping(question_8_answer),
+                // 'Responsive_Rating': answer_result_mapping(question_9_answer),
+                // 'SolutionOriented_Rating': answer_result_mapping(question_10_answer),
+                // 'Proactive_Rating': answer_result_mapping(question_11_answer),
+                // 'Comprehensive_Rating': answer_result_mapping(question_12_answer),
+                // 'RealTime_Rating': answer_result_mapping(question_13_answer),
+                // 'Integrated_Rating': answer_result_mapping(question_14_answer),
+                // 'Representative_Rating': answer_result_mapping(question_15_answer),
+                // 'CustomerFriendly_Rating': answer_result_mapping(question_16_answer),
 
-                'OCEM_See_Benchmark': parseFloat(see_theme.benchmark),
-                'OCEM_Wire_Benchmark': parseFloat(wire_theme.benchmark),
-                'OCEM_Accountability_Benchmark': parseFloat(drive_theme.benchmark),
-                'OCEM_Innovate_Benchmark': parseFloat(innovate_theme.benchmark),
+                // 'OCEM_See_Benchmark': parseFloat(see_theme.benchmark),
+                // 'OCEM_Wire_Benchmark': parseFloat(wire_theme.benchmark),
+                // 'OCEM_Accountability_Benchmark': parseFloat(drive_theme.benchmark),
+                // 'OCEM_Innovate_Benchmark': parseFloat(innovate_theme.benchmark),
 
-                'OCEM_Assessment_Comments__c': comment_body,
-                'OCEM_Assessment_Version__c': 'ocem-assessment.medallia.com',
-                'OCEM_Assessment_Taken__c': 1,
+                // 'OCEM_Assessment_Comments__c': comment_body,
+                // 'OCEM_Assessment_Version__c': 'ocem-assessment.medallia.com',
+                // 'OCEM_Assessment_Taken__c': 1,
 
-                'UTM_Medium_Most_Recent__c': $('#UTM_Medium_Most_Recent__c').val(),
-                'UTM_Source_Most_Recent__c': $('#UTM_Source_Most_Recent__c').val(),
-                'UTM_Campaign_Most_Recent__c': $('#UTM_Campaign_Most_Recent__c').val(),
-                'UTM_Content_Most_Recent__c': $('#UTM_Content_Most_Recent__c').val(),
-                'UTM_Term_Most_Recent__c': $('#UTM_Term_Most_Recent__c').val(),
-                'Conversion_Date_Most_Recent__c': $('#Conversion_Date_Most_Recent__c').val(),
-                'Conversion_Page_Most_Recent__c': $('#Conversion_Page_Most_Recent__c').val(),
-                'Conversion_Type_Most_Recent__c': $('#Conversion_Type_Most_Recent__c').val(),
-                'Conversion_Prod_Interest_Most_Recent__c': $('#Conversion_Prod_Interest_Most_Recent__c').val(),
+                // 'UTM_Medium_Most_Recent__c': $('#UTM_Medium_Most_Recent__c').val(),
+                // 'UTM_Source_Most_Recent__c': $('#UTM_Source_Most_Recent__c').val(),
+                // 'UTM_Campaign_Most_Recent__c': $('#UTM_Campaign_Most_Recent__c').val(),
+                // 'UTM_Content_Most_Recent__c': $('#UTM_Content_Most_Recent__c').val(),
+                // 'UTM_Term_Most_Recent__c': $('#UTM_Term_Most_Recent__c').val(),
+                // 'Conversion_Date_Most_Recent__c': $('#Conversion_Date_Most_Recent__c').val(),
+                // 'Conversion_Page_Most_Recent__c': $('#Conversion_Page_Most_Recent__c').val(),
+                // 'Conversion_Type_Most_Recent__c': $('#Conversion_Type_Most_Recent__c').val(),
+                // 'Conversion_Prod_Interest_Most_Recent__c': $('#Conversion_Prod_Interest_Most_Recent__c').val(),
             }
         ]
-      
-
-
-      // OCEM_Overall_Score: see_theme_score + wire_theme_score + drive_theme_score + innovate_theme_score,
-      // OCEM_See_Score: see_theme_score,
-      // OCEM_Wire_Score: wire_theme_score,
-      // OCEM_Accountability_Score: drive_theme_score,
-      // OCEM_Innovate_Score: innovate_theme_score,
-
-      // OCEM_Qualified_Score: answer_points_mapping(question_1_answer),
-      // OCEM_ExecutiveLed_Score: answer_points_mapping(question_2_answer),
-      // OCEM_Prioritized_Score: answer_points_mapping(question_3_answer),
-      // OCEM_Leveraged_Score: answer_points_mapping(question_4_answer),
-      // OCEM_Aligned_Score: answer_points_mapping(question_5_answer),
-      // OCEM_Embedded_Score: answer_points_mapping(question_6_answer),
-      // OCEM_Pervasive_Score: answer_points_mapping(question_7_answer),
-      // OCEM_Relevant_Score: answer_points_mapping(question_8_answer),
-      // OCEM_Responsive_Score: answer_points_mapping(question_9_answer),
-      // OCEM_SolutionOriented_Score: answer_points_mapping(question_10_answer),
-      // OCEM_Proactive_Score: answer_points_mapping(question_11_answer),
-      // OCEM_Comprehensive_Score: answer_points_mapping(question_12_answer),
-      // OCEM_RealTime_Score: answer_points_mapping(question_13_answer),
-      // OCEM_Integrated_Score: answer_points_mapping(question_14_answer),
-      // OCEM_Representative_Score: answer_points_mapping(question_15_answer),
-      // OCEM_CustomerFriendly_Score: answer_points_mapping(question_16_answer),
-
-      // Qualified_Rating: answer_result_mapping(question_1_answer),
-      // ExecutiveLed_Rating: answer_result_mapping(question_2_answer),
-      // Prioritized_Rating: answer_result_mapping(question_3_answer),
-      // Leveraged_Rating: answer_result_mapping(question_4_answer),
-      // Aligned_Rating: answer_result_mapping(question_5_answer),
-      // Embedded_Rating: answer_result_mapping(question_6_answer),
-      // Pervasive_Rating: answer_result_mapping(question_7_answer),
-      // Relevant_Rating: answer_result_mapping(question_8_answer),
-      // Responsive_Rating: answer_result_mapping(question_9_answer),
-      // SolutionOriented_Rating: answer_result_mapping(question_10_answer),
-      // Proactive_Rating: answer_result_mapping(question_11_answer),
-      // Comprehensive_Rating: answer_result_mapping(question_12_answer),
-      // RealTime_Rating: answer_result_mapping(question_13_answer),
-      // Integrated_Rating: answer_result_mapping(question_14_answer),
-      // Representative_Rating: answer_result_mapping(question_15_answer),
-      // CustomerFriendly_Rating: answer_result_mapping(question_16_answer),
-
-      // OCEM_See_Benchmark: parseFloat(see_theme.benchmark),
-      // OCEM_Wire_Benchmark: parseFloat(wire_theme.benchmark),
-      // OCEM_Accountability_Benchmark: parseFloat(drive_theme.benchmark),
-      // OCEM_Innovate_Benchmark: parseFloat(innovate_theme.benchmark),
-
-      // OCEM_Assessment_Comments__c: comment_body,
-      // OCEM_Assessment_Version__c: 'ocem-assessment.medallia.com',
-      // OCEM_Assessment_Taken__c: 1,
-
-      // UTM_Medium_Most_Recent__c: $('#UTM_Medium_Most_Recent__c').val(),
-      // UTM_Source_Most_Recent__c: $('#UTM_Source_Most_Recent__c').val(),
-      // UTM_Campaign_Most_Recent__c: $('#UTM_Campaign_Most_Recent__c').val(),
-      // UTM_Content_Most_Recent__c: $('#UTM_Content_Most_Recent__c').val(),
-      // UTM_Term_Most_Recent__c: $('#UTM_Term_Most_Recent__c').val(),
-      // Conversion_Date_Most_Recent__c: $('#Conversion_Date_Most_Recent__c').val(),
-      // Conversion_Page_Most_Recent__c: $('#Conversion_Page_Most_Recent__c').val(),
-      // Conversion_Type_Most_Recent__c: $('#Conversion_Type_Most_Recent__c').val(),
-      // Conversion_Prod_Interest_Most_Recent__c: $('#Conversion_Prod_Interest_Most_Recent__c').val(),
-    };
+    });
+    console.log(data);
+    return data;
   }
 
   bind_setup_honey_badger = function(){
@@ -583,7 +562,8 @@ if(Meteor.isServer) {
     var rootUrl = __meteor_runtime_config__.ROOT_URL;
 
     WebApp.connectHandlers.use(function(req, res, next) {
-      res.setHeader("Access-Control-Allow-Origin", "https://medallia-api.herokuapp.com");
+      res.setHeader("Access-Control-Allow-Origin", "https://kalyber-proxy.herokuapp.com");
+      res.setHeader("Access-Control-Allow-Headers", "X-Requested-With");
       return next();
     });
 
