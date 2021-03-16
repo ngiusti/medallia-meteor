@@ -93,18 +93,21 @@ footer {
 
 .footer-container p {
   font-size: 16px;
-  color: rgba(255,255,255,0.5)
+  color: rgba(255,255,255,0.5);
   margin-top: 40px;
 }
+
 .policies {
   text-align: center;
 }
+
 .policies a {
   display: inline-block;
   font-size: 16px;
   color: rgba(255,255,255,0.5);
   margin-right: 40px;
 }
+
 .copyright-text {
   font-size: 16px;
   color: rgba(255,255,255,0.5);
@@ -112,6 +115,7 @@ footer {
   margin-bottom: 20px;
   text-align: center;
 }
+
 .footer-paragraph {
   text-align: center;
   padding: 10px 8% 35px 8%;

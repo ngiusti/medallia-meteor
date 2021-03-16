@@ -27,7 +27,7 @@ if (Meteor.isClient) {
           'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': '*/*',
-          'Access-Control-Allow-Origin' : 'http://localhost:3000',
+          'Access-Control-Allow-Origin' : 'https://medallia-master.meteorapp.com/',
           'X-Requested-With': 'XMLHttpRequest',
         },
         success: function (data) {
@@ -57,7 +57,7 @@ if (Meteor.isClient) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + auth,
-          'Access-Control-Allow-Origin' : 'http://localhost:3000',
+          'Access-Control-Allow-Origin' : 'https://medallia-master.meteorapp.com/',
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': '*/*'
         },
@@ -376,7 +376,7 @@ if (Meteor.isClient) {
                 'OCEM_Innovate_Benchmark__c': parseFloat(innovate_theme.benchmark),
 
                 'OCEM_Assessment_Comments__c': comment_body,
-                'OCEM_Assessment_Version__c': 'ocem-assessment.medallia.com',
+                'OCEM_Assessment_Version__c': 'ocem-assessment.medalliam.com',
                 'OCEM_Assessment_Taken__c': 1,
 
                 'UTM_Medium_Most_Recent__c': $('#UTM_Medium_Most_Recent__c').val(),
