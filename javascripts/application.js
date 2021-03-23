@@ -32,7 +32,6 @@ if (Meteor.isClient) {
         },
         success: function (data) {
             res = data.access_token
-            console.log(res)
         },
         error: function (err) {
             console.log(err);
@@ -75,7 +74,6 @@ if (Meteor.isClient) {
         $(".result-pages").removeClass("hidden");
         update_iframe_height();
         scroll_to_top();
-        console.log(data["success"]);
       })
     } catch (error) {
       console.log(error);
@@ -387,7 +385,6 @@ if (Meteor.isClient) {
             }
         ]
     });
-    console.log(data);
     return data;
   }
 
